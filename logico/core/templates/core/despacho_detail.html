@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Despacho #{{ despacho.numero_despacho }} - LogiCo{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-box-seam"></i> Despacho #{{ despacho.numero_despacho }} - Orden #{{ despacho.orden.id }}</h1>
+        <a href="{% url 'despacho_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+    
+    <div class="row g-3">
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Información del Despacho</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Orden:</strong> #{{ despacho.orden.id }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Número de Despacho:</strong> {{ despacho.numero_despacho }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Cliente:</strong> {{ despacho.orden.cliente }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Teléfono:</strong> {{ despacho.orden.telefono_cliente }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Dirección:</strong> {{ despacho.orden.direccion }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Estado:</strong>
+                            <span class="badge bg-info">{{ despacho.get_estado_display }}</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Resultado:</strong>
+                            {% if despacho.resultado %}
+                            <span class="badge 
+                                {% if despacho.resultado == 'entregado' %}bg-success
+                                {% elif despacho.resultado == 'no_disponible' %}bg-warning
+                                {% else %}bg-danger{% endif %}">
+                                {{ despacho.get_resultado_display }}
+                            </span>
+                            {% else %}
+                            <span class="text-muted">Pendiente</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Repartidor:</strong> {{ despacho.repartidor.user.get_full_name|default:"-" }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Fecha:</strong> {{ despacho.fecha|date:"d/m/Y H:i" }}
+                        </div>
+                        {% if despacho.coordenadas_lat and despacho.coordenadas_lng %}
+                        <div class="col-md-6">
+                            <strong>Coordenadas:</strong> {{ despacho.coordenadas_lat }}, {{ despacho.coordenadas_lng }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if despacho.observaciones %}
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Observaciones:</strong>
+                            <p>{{ despacho.observaciones }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if despacho.foto_entrega %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <strong>Foto de Entrega:</strong>
+                            <div class="mt-2">
+                                <img src="{{ despacho.foto_entrega.url }}" alt="Foto de entrega" class="img-fluid" style="max-height: 400px;">
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Acciones</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'orden_detail' despacho.orden.pk %}" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-clipboard-check"></i> Ver Orden
+                    </a>
+                    {% if not despacho.resultado %}
+                    <a href="{% url 'despacho_create' despacho.orden.pk %}" class="btn btn-warning w-100">
+                        <i class="bi bi-arrow-repeat"></i> Registrar Re-despacho
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

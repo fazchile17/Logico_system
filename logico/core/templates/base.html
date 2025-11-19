@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LogiCo - Sistema de Logística Farmacéutica{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'core/css/custom.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if not user.is_authenticated %}login-page{% endif %}">
+    {% if user.is_authenticated %}
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="bi bi-truck"></i> LogiCo</h3>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a href="{% url 'orden_list' %}" class="nav-item {% if 'orden' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-clipboard-check"></i> Órdenes
+            </a>
+            <a href="{% url 'despacho_list' %}" class="nav-item {% if 'despacho' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-box-seam"></i> Despachos
+            </a>
+            <a href="{% url 'moto_list' %}" class="nav-item {% if 'moto' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-bicycle"></i> Motos
+            </a>
+            <a href="{% url 'usuario_list' %}" class="nav-item {% if 'usuario' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-people"></i> Usuarios
+            </a>
+            <a href="{% url 'reporte_list' %}" class="nav-item {% if 'reporte' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-graph-up"></i> Reportes
+            </a>
+            {% if user.profile and user.profile.rol == 'admin' or user.profile and user.profile.rol == 'coordinador' %}
+            <a href="/admin/" class="nav-item">
+                <i class="bi bi-gear"></i> Administración
+            </a>
+            {% endif %}
+            <a href="/swagger/" class="nav-item" target="_blank">
+                <i class="bi bi-code-square"></i> API Docs
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <i class="bi bi-person-circle"></i>
+                <span>{{ user.get_full_name|default:user.username }}</span>
+                {% if user.profile %}
+                <small class="text-muted d-block">{{ user.profile.get_rol_display }}</small>
+                {% endif %}
+            </div>
+            <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-box-arrow-right"></i> Salir
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Main Content -->
+    <div class="main-content {% if user.is_authenticated %}with-sidebar{% else %}login-content{% endif %}">
+        {% if messages %}
+        <div class="container-fluid mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

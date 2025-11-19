@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes - LogiCo{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <h1 class="mb-4"><i class="bi bi-graph-up"></i> Reportes</h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Entregas Totales</th>
+                            <th>Exitosas</th>
+                            <th>Fallidas</th>
+                            <th>Tasa de Éxito</th>
+                            <th>Ingresos</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reporte in reportes %}
+                        <tr>
+                            <td>{{ reporte.fecha|date:"d/m/Y" }}</td>
+                            <td>{{ reporte.entregas_totales }}</td>
+                            <td><span class="badge bg-success">{{ reporte.entregas_exitosas }}</span></td>
+                            <td><span class="badge bg-danger">{{ reporte.entregas_fallidas }}</span></td>
+                            <td>{{ reporte.tasa_exito|floatformat:2 }}%</td>
+                            <td>${{ reporte.ingresos_dia|floatformat:0 }}</td>
+                            <td>
+                                <a href="{% url 'reporte_export_csv' reporte.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-download"></i> CSV
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">No hay reportes registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

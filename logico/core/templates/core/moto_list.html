@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Motos - LogiCo{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-bicycle"></i> Motos</h1>
+        {% if user.profile and user.profile.rol == 'admin' or user.profile and user.profile.rol == 'coordinador' %}
+        <a href="{% url 'moto_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nueva Moto
+        </a>
+        {% endif %}
+    </div>
+    
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Estado</label>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="disponible" {% if estado_actual == 'disponible' %}selected{% endif %}>Disponible</option>
+                        <option value="en_uso" {% if estado_actual == 'en_uso' %}selected{% endif %}>En Uso</option>
+                        <option value="mantenimiento" {% if estado_actual == 'mantenimiento' %}selected{% endif %}>Mantenimiento</option>
+                        <option value="fuera_servicio" {% if estado_actual == 'fuera_servicio' %}selected{% endif %}>Fuera de Servicio</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tabla de Motos -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Patente</th>
+                            <th>Marca/Modelo</th>
+                            <th>Año</th>
+                            <th>Color</th>
+                            <th>Cilindrada</th>
+                            <th>Kilometraje</th>
+                            <th>Estado</th>
+                            <th>Repartidor</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for moto in motos %}
+                        <tr>
+                            <td><strong>{{ moto.patente }}</strong></td>
+                            <td>{{ moto.marca }} {{ moto.modelo }}</td>
+                            <td>{{ moto.año }}</td>
+                            <td>{{ moto.color }}</td>
+                            <td>{{ moto.cilindrada }}cc</td>
+                            <td>{{ moto.kilometraje }} km</td>
+                            <td>
+                                <span class="badge 
+                                    {% if moto.estado == 'disponible' %}bg-success
+                                    {% elif moto.estado == 'en_uso' %}bg-primary
+                                    {% elif moto.estado == 'mantenimiento' %}bg-warning
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ moto.get_estado_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if moto.repartidor_asignado %}
+                                {{ moto.repartidor_asignado.user.get_full_name }}
+                                {% else %}
+                                <span class="text-muted">Sin asignar</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'moto_detail' moto.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'moto_edit' moto.pk %}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted">No hay motos registradas.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

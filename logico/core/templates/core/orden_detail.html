@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block title %}Orden #{{ orden.id }} - LogiCo{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-clipboard-check"></i> Orden #{{ orden.id }}</h1>
+        <div>
+            {% if user.profile and user.profile.rol == 'admin' or user.profile and user.profile.rol == 'coordinador' %}
+            <a href="{% url 'orden_edit' orden.pk %}" class="btn btn-secondary">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            {% endif %}
+            <a href="{% url 'orden_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+    
+    <div class="row g-3">
+        <!-- Información Principal -->
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Información de la Orden</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Cliente:</strong> {{ orden.cliente }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Teléfono:</strong> {{ orden.telefono_cliente }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Dirección:</strong> {{ orden.direccion }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Estado:</strong>
+                            <span class="badge 
+                                {% if orden.estado_actual == 'retiro_receta' %}bg-warning
+                                {% elif orden.estado_actual == 'traslado' %}bg-info
+                                {% elif orden.estado_actual == 'despacho' %}bg-success
+                                {% else %}bg-danger{% endif %}">
+                                {{ orden.get_estado_actual_display }}
+                            </span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Prioridad:</strong>
+                            <span class="badge 
+                                {% if orden.prioridad == 'alta' %}bg-danger
+                                {% elif orden.prioridad == 'media' %}bg-warning
+                                {% else %}bg-secondary{% endif %}">
+                                {{ orden.get_prioridad_display }}
+                            </span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Tipo:</strong> {{ orden.get_tipo_display }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Responsable:</strong> {{ orden.responsable.user.get_full_name|default:"Sin asignar" }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Fecha Creación:</strong> {{ orden.fecha_creacion|date:"d/m/Y H:i" }}
+                        </div>
+                    </div>
+                    {% if orden.farmacia_origen or orden.farmacia_destino %}
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <strong>Farmacia Origen:</strong> {{ orden.farmacia_origen|default:"No especificada" }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Farmacia Destino:</strong> {{ orden.farmacia_destino|default:"No especificada" }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if orden.descripcion %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <strong>Descripción:</strong>
+                            <p>{{ orden.descripcion }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Medicamentos -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Medicamentos</h5>
+                </div>
+                <div class="card-body">
+                    {% if orden.medicamentos.all %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Cantidad</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for medicamento in orden.medicamentos.all %}
+                            <tr>
+                                <td>{{ medicamento.codigo }}</td>
+                                <td>{{ medicamento.nombre }}</td>
+                                <td>{{ medicamento.cantidad }}</td>
+                                <td>{{ medicamento.observaciones|default:"-" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No hay medicamentos registrados.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Despachos -->
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Despachos</h5>
+                    <a href="{% url 'despacho_create' orden.pk %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-circle"></i> Nuevo Despacho
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if despachos %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Fecha</th>
+                                <th>Repartidor</th>
+                                <th>Estado</th>
+                                <th>Resultado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for despacho in despachos %}
+                            <tr>
+                                <td>{{ despacho.numero_despacho }}</td>
+                                <td>{{ despacho.fecha|date:"d/m/Y H:i" }}</td>
+                                <td>{{ despacho.repartidor.user.get_full_name|default:"-" }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ despacho.get_estado_display }}</span>
+                                </td>
+                                <td>
+                                    {% if despacho.resultado %}
+                                    <span class="badge 
+                                        {% if despacho.resultado == 'entregado' %}bg-success
+                                        {% elif despacho.resultado == 'no_disponible' %}bg-warning
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ despacho.get_resultado_display }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">Pendiente</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'despacho_detail' despacho.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p class="text-muted">No hay despachos registrados.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Cambiar Estado -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Cambiar Estado</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'cambiar_estado_orden' orden.pk %}" id="cambiarEstadoForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <select name="estado" class="form-select" id="estadoSelect" required>
+                                <option value="retiro_receta" {% if orden.estado_actual == 'retiro_receta' %}selected{% endif %}>Retiro de Receta</option>
+                                <option value="traslado" {% if orden.estado_actual == 'traslado' %}selected{% endif %}>Traslado</option>
+                                <option value="despacho" {% if orden.estado_actual == 'despacho' %}selected{% endif %}>Despacho</option>
+                                <option value="re_despacho" {% if orden.estado_actual == 're_despacho' %}selected{% endif %}>Re-despacho</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Campos de Farmacia (solo para traslado) -->
+                        <div id="farmaciasSection" style="display: none;">
+                            <div class="mb-3">
+                                <label class="form-label">Farmacia Origen</label>
+                                <select name="farmacia_origen" class="form-select" id="farmaciaOrigenSelect">
+                                    <option value="">Seleccionar...</option>
+                                    {% for farmacia in farmacias %}
+                                    <option value="{{ farmacia.pk }}" {% if orden.farmacia_origen == farmacia %}selected{% endif %}>
+                                        {{ farmacia.nombre }} - {{ farmacia.ciudad }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Farmacia Destino</label>
+                                <select name="farmacia_destino" class="form-select" id="farmaciaDestinoSelect">
+                                    <option value="">Seleccionar...</option>
+                                    {% for farmacia in farmacias %}
+                                    <option value="{{ farmacia.pk }}" {% if orden.farmacia_destino == farmacia %}selected{% endif %}>
+                                        {{ farmacia.nombre }} - {{ farmacia.ciudad }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea name="descripcion" class="form-control" rows="2" placeholder="Descripción (opcional)"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Cambiar Estado</button>
+                    </form>
+                </div>
+            </div>
+            
+            <script>
+                // Mostrar/ocultar campos de farmacia según el estado seleccionado
+                document.getElementById('estadoSelect').addEventListener('change', function() {
+                    const farmaciasSection = document.getElementById('farmaciasSection');
+                    const farmaciaOrigenSelect = document.getElementById('farmaciaOrigenSelect');
+                    const farmaciaDestinoSelect = document.getElementById('farmaciaDestinoSelect');
+                    
+                    if (this.value === 'traslado') {
+                        farmaciasSection.style.display = 'block';
+                        farmaciaOrigenSelect.required = true;
+                        farmaciaDestinoSelect.required = true;
+                    } else {
+                        farmaciasSection.style.display = 'none';
+                        farmaciaOrigenSelect.required = false;
+                        farmaciaDestinoSelect.required = false;
+                    }
+                });
+                
+                // Excluir farmacia origen de farmacia destino
+                document.getElementById('farmaciaOrigenSelect').addEventListener('change', function() {
+                    const farmaciaDestinoSelect = document.getElementById('farmaciaDestinoSelect');
+                    const origenId = this.value;
+                    
+                    // Resetear destino si es el mismo que origen
+                    if (farmaciaDestinoSelect.value === origenId) {
+                        farmaciaDestinoSelect.value = '';
+                    }
+                    
+                    // Ocultar la opción de origen en destino
+                    Array.from(farmaciaDestinoSelect.options).forEach(option => {
+                        if (option.value === origenId && option.value !== '') {
+                            option.style.display = 'none';
+                        } else {
+                            option.style.display = 'block';
+                        }
+                    });
+                });
+                
+                // Inicializar al cargar la página
+                document.addEventListener('DOMContentLoaded', function() {
+                    const estadoSelect = document.getElementById('estadoSelect');
+                    if (estadoSelect.value === 'traslado') {
+                        document.getElementById('farmaciasSection').style.display = 'block';
+                        document.getElementById('farmaciaOrigenSelect').required = true;
+                        document.getElementById('farmaciaDestinoSelect').required = true;
+                    }
+                    
+                    // Aplicar exclusión inicial si hay farmacia origen
+                    const origenId = document.getElementById('farmaciaOrigenSelect').value;
+                    if (origenId) {
+                        const farmaciaDestinoSelect = document.getElementById('farmaciaDestinoSelect');
+                        Array.from(farmaciaDestinoSelect.options).forEach(option => {
+                            if (option.value === origenId && option.value !== '') {
+                                option.style.display = 'none';
+                            }
+                        });
+                    }
+                });
+            </script>
+            
+            <!-- Asignar Repartidor - Solo coordinador o admin -->
+            {% if user_profile.rol == 'admin' or user_profile.rol == 'coordinador' %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Asignar Repartidor</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'asignar_repartidor' orden.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <select name="repartidor" class="form-select" required>
+                                <option value="">Seleccionar...</option>
+                                {% for repartidor in repartidores %}
+                                <option value="{{ repartidor.pk }}" {% if orden.responsable == repartidor %}selected{% endif %}>
+                                    {{ repartidor.user.get_full_name }} {% if repartidor.moto %}({{ repartidor.moto.patente }}){% else %}(Sin moto){% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Asignar</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Historial de Movimientos -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Historial de Movimientos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for movimiento in movimientos %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ movimiento.get_estado_display }}</strong>
+                                <small class="text-muted">{{ movimiento.timestamp|date:"d/m/Y H:i" }}</small>
+                            </div>
+                            {% if movimiento.descripcion %}
+                            <small class="text-muted">{{ movimiento.descripcion }}</small>
+                            {% endif %}
+                            {% if movimiento.repartidor %}
+                            <div><small>Por: {{ movimiento.repartidor.user.get_full_name }}</small></div>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <p class="text-muted">No hay movimientos registrados.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

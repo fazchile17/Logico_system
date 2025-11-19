@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Usuarios - LogiCo{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-people"></i> Usuarios</h1>
+        {% if user.profile and user.profile.rol == 'admin' %}
+        <a href="{% url 'usuario_create' %}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Nuevo Usuario
+        </a>
+        {% endif %}
+    </div>
+    
+    {% if user_profile.rol != 'repartidor' %}
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Rol</label>
+                    <select name="rol" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="admin" {% if rol_actual == 'admin' %}selected{% endif %}>Administrador</option>
+                        <option value="coordinador" {% if rol_actual == 'coordinador' %}selected{% endif %}>Coordinador</option>
+                        <option value="repartidor" {% if rol_actual == 'repartidor' %}selected{% endif %}>Repartidor</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Estado</label>
+                    <select name="activo" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="true" {% if activo_actual == 'true' %}selected{% endif %}>Activos</option>
+                        <option value="false" {% if activo_actual == 'false' %}selected{% endif %}>Inactivos</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Tabla de Usuarios -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>RUT</th>
+                            <th>Teléfono</th>
+                            <th>Rol</th>
+                            <th>Moto</th>
+                            <th>Estado Turno</th>
+                            <th>Activo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>
+                                <strong>{{ usuario.user.get_full_name|default:usuario.user.username }}</strong><br>
+                                <small class="text-muted">{{ usuario.user.email }}</small>
+                            </td>
+                            <td>{{ usuario.rut|default:"-" }}</td>
+                            <td>{{ usuario.telefono }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if usuario.rol == 'admin' %}bg-danger
+                                    {% elif usuario.rol == 'coordinador' %}bg-warning
+                                    {% else %}bg-info{% endif %}">
+                                    {{ usuario.get_rol_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if usuario.moto %}
+                                <a href="{% url 'moto_detail' usuario.moto.pk %}">{{ usuario.moto.patente }}</a>
+                                {% else %}
+                                <span class="text-muted">Sin moto</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if usuario.estado_turno == 'disponible' %}bg-success
+                                    {% elif usuario.estado_turno == 'ocupado' %}bg-primary
+                                    {% else %}bg-warning{% endif %}">
+                                    {{ usuario.get_estado_turno_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if usuario.activo %}
+                                <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'usuario_detail' usuario.pk %}" class="btn btn-sm btn-outline-primary" title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if user.profile and user.profile.rol == 'admin' or user.profile and user.profile.rol == 'coordinador' %}
+                                <a href="{% url 'usuario_edit' usuario.pk %}" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">No hay usuarios registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

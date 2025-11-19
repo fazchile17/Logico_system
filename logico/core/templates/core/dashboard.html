@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - LogiCo{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <h1 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+    
+    <!-- Cards de Estadísticas -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Total Órdenes</h6>
+                            <h2 class="card-title mb-0">{{ total_ordenes }}</h2>
+                        </div>
+                        <i class="bi bi-clipboard-check display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Entregas Exitosas</h6>
+                            <h2 class="card-title mb-0">{{ entregas_exitosas }}</h2>
+                        </div>
+                        <i class="bi bi-check-circle display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Entregas Fallidas</h6>
+                            <h2 class="card-title mb-0">{{ entregas_fallidas }}</h2>
+                        </div>
+                        <i class="bi bi-x-circle display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Tasa de Éxito</h6>
+                            <h2 class="card-title mb-0">{{ tasa_exito }}%</h2>
+                        </div>
+                        <i class="bi bi-graph-up display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Repartidores Activos</h6>
+                    <h3 class="card-title">{{ repartidores_activos }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Motos Activas</h6>
+                    <h3 class="card-title">{{ motos_activas }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Total Despachos</h6>
+                    <h3 class="card-title">{{ total_despachos }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráficos -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Entregas por Día (Últimos 7 días)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="entregasChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Resultados de Despacho</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="resultadosChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Órdenes por Estado -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Órdenes por Estado</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for item in ordenes_por_estado %}
+                        <div class="col-md-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-center p-3 border rounded">
+                                <span>{{ item.estado }}</span>
+                                <span class="badge bg-primary">{{ item.count }}</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <p class="text-muted">No hay órdenes registradas.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Gráfico de entregas por día
+const entregasData = JSON.parse('{{ entregas_por_dia|escapejs }}');
+const ctx1 = document.getElementById('entregasChart').getContext('2d');
+new Chart(ctx1, {
+    type: 'line',
+    data: {
+        labels: entregasData.map(d => d.day),
+        datasets: [{
+            label: 'Total',
+            data: entregasData.map(d => d.total),
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }, {
+            label: 'Exitosas',
+            data: entregasData.map(d => d.exitosas),
+            borderColor: 'rgb(54, 162, 235)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true
+    }
+});
+
+// Gráfico de resultados
+const resultadosData = JSON.parse('{{ resultados_despacho|escapejs }}');
+const ctx2 = document.getElementById('resultadosChart').getContext('2d');
+new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+        labels: resultadosData.map(r => r.resultado),
+        datasets: [{
+            data: resultadosData.map(r => r.count),
+            backgroundColor: [
+                'rgb(75, 192, 192)',
+                'rgb(255, 99, 132)',
+                'rgb(255, 205, 86)',
+                'rgb(201, 203, 207)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true
+    }
+});
+</script>
+{% endblock %}
+

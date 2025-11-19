@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}{{ usuario.user.get_full_name|default:usuario.user.username }} - LogiCo{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-person-circle"></i> {{ usuario.user.get_full_name|default:usuario.user.username }}</h1>
+        <div>
+            {% if user.profile and user.profile.rol == 'admin' or user.profile and user.profile.rol == 'coordinador' %}
+            <a href="{% url 'usuario_edit' usuario.pk %}" class="btn btn-secondary">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            {% endif %}
+            <a href="{% url 'usuario_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+    
+    <div class="row g-3">
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Información Personal</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Nombre de Usuario:</strong> {{ usuario.user.username }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Email:</strong> {{ usuario.user.email }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Nombre:</strong> {{ usuario.user.first_name|default:"-" }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Apellido:</strong> {{ usuario.user.last_name|default:"-" }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>RUT:</strong> {{ usuario.rut|default:"-" }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Teléfono:</strong> {{ usuario.telefono }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Rol:</strong>
+                            <span class="badge 
+                                {% if usuario.rol == 'admin' %}bg-danger
+                                {% elif usuario.rol == 'coordinador' %}bg-warning
+                                {% else %}bg-info{% endif %}">
+                                {{ usuario.get_rol_display }}
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Estado:</strong>
+                            {% if usuario.activo %}
+                            <span class="badge bg-success">Activo</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Fecha de Creación:</strong> {{ usuario.fecha_creacion|date:"d/m/Y H:i" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Moto Asignada</h5>
+                </div>
+                <div class="card-body">
+                    {% if usuario.moto %}
+                    <p><strong>Patente:</strong> <a href="{% url 'moto_detail' usuario.moto.pk %}">{{ usuario.moto.patente }}</a></p>
+                    <p><strong>Marca/Modelo:</strong> {{ usuario.moto.marca }} {{ usuario.moto.modelo }}</p>
+                    <p><strong>Estado:</strong> 
+                        <span class="badge 
+                            {% if usuario.moto.estado == 'disponible' %}bg-success
+                            {% elif usuario.moto.estado == 'en_uso' %}bg-primary
+                            {% elif usuario.moto.estado == 'mantenimiento' %}bg-warning
+                            {% else %}bg-danger{% endif %}">
+                            {{ usuario.moto.get_estado_display }}
+                        </span>
+                    </p>
+                    {% else %}
+                    <p class="text-muted">Sin moto asignada</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Estado de Turno - Solo para repartidores -->
+            {% if usuario.rol == 'repartidor' and user_profile.rol == 'repartidor' and usuario.pk == user_profile.pk %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Estado de Turno</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Estado Actual:</strong>
+                        <span class="badge 
+                            {% if usuario.estado_turno == 'disponible' %}bg-success
+                            {% elif usuario.estado_turno == 'ocupado' %}bg-primary
+                            {% else %}bg-warning{% endif %}">
+                            {{ usuario.get_estado_turno_display }}
+                        </span>
+                    </p>
+                    {% if usuario.estado_turno == 'descanso' and usuario.fecha_inicio_descanso %}
+                    <p class="text-muted">
+                        <small>Inicio de descanso: {{ usuario.fecha_inicio_descanso|date:"H:i" }}</small>
+                    </p>
+                    {% endif %}
+                    <form method="post" action="{% url 'cambiar_estado_turno' usuario.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Cambiar Estado</label>
+                            <select name="estado_turno" class="form-select" required>
+                                <option value="disponible" {% if usuario.estado_turno == 'disponible' %}selected{% endif %}>Disponible</option>
+                                <option value="ocupado" {% if usuario.estado_turno == 'ocupado' %}selected{% endif %}>Ocupado</option>
+                                <option value="descanso" {% if usuario.estado_turno == 'descanso' %}selected{% endif %}>Descanso (1 hora máximo)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-arrow-repeat"></i> Cambiar Estado
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Estado de Turno</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Estado:</strong>
+                        <span class="badge 
+                            {% if usuario.estado_turno == 'disponible' %}bg-success
+                            {% elif usuario.estado_turno == 'ocupado' %}bg-primary
+                            {% else %}bg-warning{% endif %}">
+                            {{ usuario.get_estado_turno_display }}
+                        </span>
+                    </p>
+                    {% if usuario.estado_turno == 'descanso' and usuario.fecha_inicio_descanso %}
+                    <p class="text-muted">
+                        <small>Inicio de descanso: {{ usuario.fecha_inicio_descanso|date:"H:i" }}</small>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Cambiar Moto - Solo coordinador -->
+            {% if user_profile.rol == 'coordinador' and motos_disponibles %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Cambiar Moto</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'usuario_edit' usuario.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Seleccionar Moto</label>
+                            <select name="moto" class="form-select">
+                                <option value="">Sin moto</option>
+                                {% for moto in motos_disponibles %}
+                                <option value="{{ moto.pk }}" {% if usuario.moto == moto %}selected{% endif %}>
+                                    {{ moto.patente }} - {{ moto.marca }} {{ moto.modelo }} ({{ moto.get_estado_display }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-bicycle"></i> Actualizar Moto
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - LogiCo{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-person-plus"></i> {{ title }}</h1>
+        <a href="{% url 'usuario_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if user_form %}
+                        <!-- Información del Usuario (User model) -->
+                        <h5 class="mb-3">Información de Usuario</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre de Usuario *</label>
+                                {{ user_form.username }}
+                                {% if user_form.username.errors %}
+                                <div class="text-danger">{{ user_form.username.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email *</label>
+                                {{ user_form.email }}
+                                {% if user_form.email.errors %}
+                                <div class="text-danger">{{ user_form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre</label>
+                                {{ user_form.first_name }}
+                                {% if user_form.first_name.errors %}
+                                <div class="text-danger">{{ user_form.first_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Apellido</label>
+                                {{ user_form.last_name }}
+                                {% if user_form.last_name.errors %}
+                                <div class="text-danger">{{ user_form.last_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Contraseña{% if usuario %} (dejar en blanco para no cambiar){% else %} *{% endif %}</label>
+                                {{ user_form.password }}
+                                {% if user_form.password.help_text %}
+                                <small class="form-text text-muted">{{ user_form.password.help_text }}</small>
+                                {% endif %}
+                                {% if user_form.password.errors %}
+                                <div class="text-danger">{{ user_form.password.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Confirmar Contraseña</label>
+                                {{ user_form.password_confirm }}
+                                {% if user_form.password_confirm.errors %}
+                                <div class="text-danger">{{ user_form.password_confirm.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ user_form.is_active }}
+                                <label class="form-check-label" for="{{ user_form.is_active.id_for_label }}">
+                                    Usuario Activo
+                                </label>
+                            </div>
+                        </div>
+                        <hr>
+                        {% endif %}
+                        
+                        <!-- Información del Perfil (UsuarioProfile) -->
+                        <h5 class="mb-3">Información del Perfil</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">RUT</label>
+                                {{ profile_form.rut }}
+                                {% if profile_form.rut.errors %}
+                                <div class="text-danger">{{ profile_form.rut.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono *</label>
+                                {{ profile_form.telefono }}
+                                {% if profile_form.telefono.errors %}
+                                <div class="text-danger">{{ profile_form.telefono.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Rol *</label>
+                                {{ profile_form.rol }}
+                                {% if profile_form.rol.errors %}
+                                <div class="text-danger">{{ profile_form.rol.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Moto</label>
+                                {{ profile_form.moto }}
+                                {% if profile_form.moto.errors %}
+                                <div class="text-danger">{{ profile_form.moto.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ profile_form.activo }}
+                                <label class="form-check-label" for="{{ profile_form.activo.id_for_label }}">
+                                    Perfil Activo
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'usuario_list' %}" class="btn btn-secondary">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

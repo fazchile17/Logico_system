@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - LogiCo{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-clipboard-check"></i> {{ title }}</h1>
+        <a href="{% url 'orden_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.cliente.label }}</label>
+                                {{ form.cliente }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.telefono_cliente.label }}</label>
+                                {{ form.telefono_cliente }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">{{ form.direccion.label }}</label>
+                                {{ form.direccion }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.tipo.label }}</label>
+                                {{ form.tipo }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.prioridad.label }}</label>
+                                {{ form.prioridad }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.estado_actual.label }}</label>
+                                {{ form.estado_actual }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.farmacia_origen.label }}</label>
+                                {{ form.farmacia_origen }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.farmacia_destino.label }}</label>
+                                {{ form.farmacia_destino }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.responsable.label }}</label>
+                                {{ form.responsable }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">{{ form.descripcion.label }}</label>
+                                {{ form.descripcion }}
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Guardar
+                            </button>
+                            <a href="{% url 'orden_list' %}" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

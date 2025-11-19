@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Moto {{ moto.patente }} - LogiCo{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-bicycle"></i> Moto {{ moto.patente }}</h1>
+        <div>
+            {% if user.profile and user.profile.rol == 'admin' or user.profile and user.profile.rol == 'coordinador' %}
+            <a href="{% url 'moto_edit' moto.pk %}" class="btn btn-secondary">
+                <i class="bi bi-pencil"></i> Editar
+            </a>
+            {% endif %}
+            <a href="{% url 'moto_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+    
+    <div class="row g-3">
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Información de la Moto</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Patente:</strong> {{ moto.patente }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Estado:</strong>
+                            <span class="badge 
+                                {% if moto.estado == 'disponible' %}bg-success
+                                {% elif moto.estado == 'en_uso' %}bg-primary
+                                {% elif moto.estado == 'mantenimiento' %}bg-warning
+                                {% else %}bg-danger{% endif %}">
+                                {{ moto.get_estado_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Marca:</strong> {{ moto.marca }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Modelo:</strong> {{ moto.modelo }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Año:</strong> {{ moto.año }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Color:</strong> {{ moto.color }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Cilindrada:</strong> {{ moto.cilindrada }}cc
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Kilometraje:</strong> {{ moto.kilometraje }} km
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Fecha Ingreso:</strong> {{ moto.fecha_ingreso|date:"d/m/Y" }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Último Mantenimiento:</strong> {{ moto.fecha_ultimo_mantenimiento|date:"d/m/Y"|default:"N/A" }}
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Próximo Mantenimiento:</strong> {{ moto.proximo_mantenimiento|date:"d/m/Y"|default:"N/A" }}
+                        </div>
+                    </div>
+                    {% if moto.dias_sin_mantenimiento %}
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <strong>Días sin Mantenimiento:</strong> {{ moto.dias_sin_mantenimiento }} días
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if moto.observaciones %}
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Observaciones:</strong>
+                            <p>{{ moto.observaciones }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Repartidor Asignado</h5>
+                </div>
+                <div class="card-body">
+                    {% if moto.repartidor_asignado %}
+                    <p><strong>{{ moto.repartidor_asignado.user.get_full_name }}</strong></p>
+                    <p class="text-muted">{{ moto.repartidor_asignado.user.email }}</p>
+                    <p class="text-muted">Tel: {{ moto.repartidor_asignado.telefono }}</p>
+                    {% else %}
+                    <p class="text-muted">Sin repartidor asignado</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Asignar Repartidor - Solo coordinador o admin -->
+            {% if user_profile.rol == 'admin' or user_profile.rol == 'coordinador' %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Asignar Repartidor</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'asignar_moto_repartidor' moto.pk %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Seleccionar Repartidor</label>
+                            <select name="repartidor" class="form-select" required>
+                                <option value="">Seleccionar...</option>
+                                {% for repartidor in repartidores %}
+                                <option value="{{ repartidor.pk }}" {% if moto.repartidor_asignado == repartidor %}selected{% endif %}>
+                                    {{ repartidor.user.get_full_name }} {% if repartidor.moto and repartidor.moto != moto %}(Moto: {{ repartidor.moto.patente }}){% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-person-plus"></i> Asignar Repartidor
+                        </button>
+                    </form>
+                    {% if moto.repartidor_asignado %}
+                    <form method="post" action="{% url 'asignar_moto_repartidor' moto.pk %}" class="mt-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="repartidor" value="">
+                        <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('¿Deseas desasignar el repartidor de esta moto?')">
+                            <i class="bi bi-person-dash"></i> Desasignar
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

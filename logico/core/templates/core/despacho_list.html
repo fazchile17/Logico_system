@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Despachos - LogiCo{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <h1 class="mb-4"><i class="bi bi-box-seam"></i> Despachos</h1>
+    
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Estado</label>
+                    <select name="estado" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="despacho" {% if estado_actual == 'despacho' %}selected{% endif %}>Despacho</option>
+                        <option value="re_despacho" {% if estado_actual == 're_despacho' %}selected{% endif %}>Re-despacho</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Resultado</label>
+                    <select name="resultado" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="entregado" {% if resultado_actual == 'entregado' %}selected{% endif %}>Entregado</option>
+                        <option value="no_disponible" {% if resultado_actual == 'no_disponible' %}selected{% endif %}>No Disponible</option>
+                        <option value="error" {% if resultado_actual == 'error' %}selected{% endif %}>Error</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tabla de Despachos -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Orden</th>
+                            <th># Despacho</th>
+                            <th>Cliente</th>
+                            <th>Repartidor</th>
+                            <th>Estado</th>
+                            <th>Resultado</th>
+                            <th>Intentos</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for despacho in despachos %}
+                        <tr>
+                            <td>#{{ despacho.orden.id }}</td>
+                            <td>
+                                {{ despacho.numero_despacho }}
+                                {% if despacho.total_intentos > 1 %}
+                                <small class="text-muted d-block">(Último intento)</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ despacho.orden.cliente }}</td>
+                            <td>{{ despacho.repartidor.user.get_full_name|default:"-" }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ despacho.get_estado_display }}</span>
+                            </td>
+                            <td>
+                                {% if despacho.resultado %}
+                                <span class="badge 
+                                    {% if despacho.resultado == 'entregado' %}bg-success
+                                    {% elif despacho.resultado == 'no_disponible' %}bg-warning
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ despacho.get_resultado_display }}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">Pendiente</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if despacho.total_intentos > 1 %}
+                                <span class="badge bg-secondary" title="Se intentó despachar {{ despacho.total_intentos }} veces">
+                                    {{ despacho.total_intentos }} intentos
+                                </span>
+                                {% else %}
+                                <span class="text-muted">1 intento</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ despacho.fecha|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'despacho_detail' despacho.pk %}" class="btn btn-sm btn-outline-primary" title="Ver detalle">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'orden_detail' despacho.orden.pk %}" class="btn btn-sm btn-outline-info" title="Ver orden">
+                                    <i class="bi bi-clipboard-check"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center text-muted">No hay despachos registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

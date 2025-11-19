@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - LogiCo{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-bicycle"></i> {{ title }}</h1>
+        <a href="{% url 'moto_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.patente.label }}</label>
+                                {{ form.patente }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.estado.label }}</label>
+                                {{ form.estado }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.marca.label }}</label>
+                                {{ form.marca }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.modelo.label }}</label>
+                                {{ form.modelo }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.año.label }}</label>
+                                {{ form.año }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.color.label }}</label>
+                                {{ form.color }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.cilindrada.label }}</label>
+                                {{ form.cilindrada }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ form.kilometraje.label }}</label>
+                                {{ form.kilometraje }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.fecha_ultimo_mantenimiento.label }}</label>
+                                {{ form.fecha_ultimo_mantenimiento }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.proximo_mantenimiento.label }}</label>
+                                {{ form.proximo_mantenimiento }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">{{ form.observaciones.label }}</label>
+                                {{ form.observaciones }}
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check">
+                                    {{ form.activa }}
+                                    <label class="form-check-label" for="{{ form.activa.id_for_label }}">
+                                        {{ form.activa.label }}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Guardar
+                            </button>
+                            <a href="{% url 'moto_list' %}" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
