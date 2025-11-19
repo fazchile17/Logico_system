@@ -751,12 +751,27 @@ def usuario_create(request):
         profile_form = UsuarioProfileForm(request.POST)
         
         if user_form.is_valid() and profile_form.is_valid():
-            # Crear usuario
+            # Crear usuario (el signal creará automáticamente el perfil)
             user = user_form.save()
             
-            # Crear perfil
-            profile = profile_form.save(commit=False)
-            profile.user = user
+            # Obtener o crear el perfil (debería existir por el signal)
+            profile, created = UsuarioProfile.objects.get_or_create(
+                user=user,
+                defaults={
+                    'telefono': '',
+                    'rol': 'repartidor',
+                    'estado_turno': 'disponible',
+                    'activo': True,
+                }
+            )
+            
+            # Actualizar el perfil con los datos del formulario
+            profile.telefono = profile_form.cleaned_data.get('telefono', '')
+            profile.rut = profile_form.cleaned_data.get('rut', '')
+            profile.rol = profile_form.cleaned_data.get('rol', 'repartidor')
+            profile.estado_turno = profile_form.cleaned_data.get('estado_turno', 'disponible')
+            profile.activo = profile_form.cleaned_data.get('activo', True)
+            profile.moto = profile_form.cleaned_data.get('moto')
             profile.save()
             
             # Si se asignó una moto, actualizar su estado

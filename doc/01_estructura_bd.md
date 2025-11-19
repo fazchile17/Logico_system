@@ -321,10 +321,10 @@ Orden (N) ──────< (M) Ruta (1) ──────< (N) UsuarioProfil
 
 ### Tabla: core_orden
 
-| Campo | Tipo | Longitud | Null | Default | Descripción |
-|-------|------|----------|------|---------|-------------|
-| id | INTEGER | - | NO | AUTO | Clave primaria |
-| cliente | VARCHAR | 200 | NO | - | Nombre del cliente |
+| Campo | Tipo  | Longitud | Null | Default | Descripción   |
+|-------|------ |----------|------|---------|-------------  |
+| id    |INTEGER|      -   | NO   | AUTO    |Clave primaria |
+|cliente|VARCHAR| 200      | NO   | -       | Nombre del cliente|
 | direccion | TEXT | - | NO | - | Dirección de entrega |
 | telefono_cliente | VARCHAR | 20 | NO | - | Teléfono del cliente |
 | descripcion | TEXT | - | YES | NULL | Descripción adicional |
