@@ -50,3 +50,14 @@ Thumbs.db
 # Git
 logico/.git/
 
+# Media files
+*.mkv
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+doc/*.mkv
+doc/*.mp4
+doc/*.avi
+
